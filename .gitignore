@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+*.swp
+*~
+
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+
+# Claude/AI
+.claude/
+
+# Debug logs
+firebase-debug.log
