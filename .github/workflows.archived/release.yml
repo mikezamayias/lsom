@@ -1,0 +1,212 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Release
+    runs-on: macos-14
+
+    env:
+      SCHEME: lsom
+      PROJECT: lsom.xcodeproj
+      APP_NAME: lsom
+      ARCHIVE_PATH: build/lsom.xcarchive
+      EXPORT_PATH: build/export
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for changelog generation
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+          echo "📦 Building version: $VERSION"
+
+      - name: Select latest Xcode
+        run: |
+          XCODE_PATH=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
+          echo "Using Xcode at: $XCODE_PATH"
+          sudo xcode-select -s "$XCODE_PATH/Contents/Developer"
+          xcodebuild -version
+
+      # ── Code Signing Setup ──────────────────────────────────────
+      - name: Install certificate (if available)
+        if: env.CERTIFICATE_BASE64 != ''
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.DEVELOPER_ID_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ github.run_id }}
+        run: |
+          # Create a temporary keychain
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          # Import certificate
+          CERT_PATH=$RUNNER_TEMP/certificate.p12
+          echo -n "$CERTIFICATE_BASE64" | base64 --decode -o "$CERT_PATH"
+          security import "$CERT_PATH" \
+            -P "$CERTIFICATE_PASSWORD" \
+            -A -t cert -f pkcs12 \
+            -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: \
+            -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+
+          echo "✅ Signing certificate installed"
+
+      # ── Build ───────────────────────────────────────────────────
+      - name: Archive (Release)
+        run: |
+          # Determine signing flags
+          if [ -n "${{ secrets.DEVELOPER_ID_CERTIFICATE_BASE64 }}" ]; then
+            SIGN_FLAGS=""
+            echo "🔏 Building with Developer ID signing"
+          else
+            SIGN_FLAGS="CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO"
+            echo "⚠️  Building without code signing (no certificate configured)"
+          fi
+
+          xcodebuild archive \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -destination 'platform=macOS' \
+            -archivePath "$ARCHIVE_PATH" \
+            $SIGN_FLAGS \
+            | xcpretty --color || exit ${PIPESTATUS[0]}
+
+      - name: Export .app
+        run: |
+          mkdir -p "$EXPORT_PATH"
+
+          # Create export options plist
+          if [ -n "${{ secrets.DEVELOPER_ID_CERTIFICATE_BASE64 }}" ]; then
+            METHOD="developer-id"
+            TEAM_ID="${{ secrets.TEAM_ID }}"
+          else
+            METHOD="mac-application"
+            TEAM_ID=""
+          fi
+
+          cat > build/ExportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>${METHOD}</string>
+            $([ -n "$TEAM_ID" ] && echo "<key>teamID</key><string>${TEAM_ID}</string>")
+          </dict>
+          </plist>
+          EOF
+
+          # Try xcodebuild export; fall back to copying from archive
+          if xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportOptionsPlist build/ExportOptions.plist \
+            -exportPath "$EXPORT_PATH" 2>/dev/null; then
+            echo "✅ Exported via xcodebuild"
+          else
+            echo "⚠️  xcodebuild export failed, copying .app from archive directly"
+            cp -R "$ARCHIVE_PATH/Products/Applications/$APP_NAME.app" "$EXPORT_PATH/"
+          fi
+
+          ls -la "$EXPORT_PATH/"
+
+      # ── Notarize (only if credentials exist) ────────────────────
+      - name: Notarize app
+        if: env.APPLE_ID != ''
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          TEAM_ID: ${{ secrets.TEAM_ID }}
+        run: |
+          # Create zip for notarization
+          ditto -c -k --keepParent "$EXPORT_PATH/$APP_NAME.app" build/notarize.zip
+
+          xcrun notarytool submit build/notarize.zip \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_ID_PASSWORD" \
+            --team-id "$TEAM_ID" \
+            --wait
+
+          xcrun stapler staple "$EXPORT_PATH/$APP_NAME.app"
+          echo "✅ Notarization complete"
+
+      # ── Package ─────────────────────────────────────────────────
+      - name: Create distributable zip
+        run: |
+          cd "$EXPORT_PATH"
+          ditto -c -k --keepParent "$APP_NAME.app" "$APP_NAME.zip"
+          echo "📦 Created $APP_NAME.zip"
+
+      - name: Generate checksums
+        id: checksums
+        run: |
+          cd "$EXPORT_PATH"
+          shasum -a 256 "$APP_NAME.zip" > checksums-sha256.txt
+          cat checksums-sha256.txt
+          echo "sha256=$(cat checksums-sha256.txt | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
+      # ── Changelog ───────────────────────────────────────────────
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get the previous tag
+          PREV_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]' | sed -n '2p')
+
+          if [ -n "$PREV_TAG" ]; then
+            echo "Changelog since $PREV_TAG:"
+            CHANGES=$(git log "$PREV_TAG"..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          else
+            echo "First release — full history:"
+            CHANGES=$(git log --pretty=format:"- %s (%h)" --no-merges)
+          fi
+
+          # Write to file for the release body
+          {
+            echo "## What's Changed"
+            echo ""
+            echo "$CHANGES"
+            echo ""
+            echo "---"
+            echo "**SHA-256:** \`$(cat "$EXPORT_PATH/checksums-sha256.txt" | awk '{print $1}')\`"
+          } > build/RELEASE_NOTES.md
+
+          cat build/RELEASE_NOTES.md
+
+      # ── GitHub Release ──────────────────────────────────────────
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: lsom ${{ steps.version.outputs.tag }}
+          body_path: build/RELEASE_NOTES.md
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: |
+            ${{ env.EXPORT_PATH }}/lsom.zip
+            ${{ env.EXPORT_PATH }}/checksums-sha256.txt
+
+      # ── Cleanup ─────────────────────────────────────────────────
+      - name: Cleanup keychain
+        if: always()
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          if [ -f "$KEYCHAIN_PATH" ]; then
+            security delete-keychain "$KEYCHAIN_PATH"
+          fi

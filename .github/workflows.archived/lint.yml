@@ -1,0 +1,60 @@
+name: Lint
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
+
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Code Style
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run SwiftLint (if available)
+        run: |
+          if command -v swiftlint &>/dev/null; then
+            echo "✅ SwiftLint found — running analysis"
+            swiftlint lint --reporter github-actions-logging --strict
+          elif brew list swiftlint &>/dev/null 2>&1; then
+            echo "✅ SwiftLint found via Homebrew"
+            swiftlint lint --reporter github-actions-logging --strict
+          else
+            echo "⚠️  SwiftLint not installed — installing via Homebrew"
+            brew install swiftlint
+            swiftlint lint --reporter github-actions-logging --strict || true
+          fi
+
+      - name: Check for common issues
+        run: |
+          echo "🔍 Checking for common code issues..."
+          ISSUES=0
+
+          # Check for force unwraps (warning only)
+          FORCE_UNWRAPS=$(grep -rn '![[:space:]]*$\|!\.' --include='*.swift' lsom/ lsomTests/ 2>/dev/null | grep -v '//.*!' | grep -v 'IBOutlet' | grep -v 'IBAction' | wc -l | tr -d ' ')
+          if [ "$FORCE_UNWRAPS" -gt 0 ]; then
+            echo "::warning::Found approximately $FORCE_UNWRAPS potential force unwraps"
+          fi
+
+          # Check for TODO/FIXME markers
+          TODOS=$(grep -rn 'TODO\|FIXME\|HACK\|XXX' --include='*.swift' lsom/ lsomTests/ 2>/dev/null | wc -l | tr -d ' ')
+          if [ "$TODOS" -gt 0 ]; then
+            echo "::notice::Found $TODOS TODO/FIXME/HACK markers:"
+            grep -rn 'TODO\|FIXME\|HACK\|XXX' --include='*.swift' lsom/ lsomTests/ 2>/dev/null || true
+          fi
+
+          # Check for large files (>500 lines)
+          echo ""
+          echo "📏 Files over 500 lines:"
+          find lsom/ lsomTests/ -name '*.swift' -exec wc -l {} + 2>/dev/null | sort -rn | head -10 || true
+
+          echo ""
+          echo "✅ Lint checks complete"
