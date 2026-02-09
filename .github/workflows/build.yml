@@ -27,6 +27,21 @@ jobs:
           sudo xcode-select -s "$XCODE_PATH/Contents/Developer"
           xcodebuild -version
 
+      - name: Warm up Xcode (SDK cache)
+        run: |
+          echo "Warming up Xcode SDKs..."
+          xcodebuild -showsdks > /dev/null 2>&1
+          xcodebuild -version > /dev/null 2>&1
+          echo "✅ Xcode ready"
+
+      - name: Restore DerivedData cache
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: xcode-derived-data-${{ runner.os }}-${{ hashFiles('**/Package.resolved', 'lsom.xcodeproj/**/*.pbxproj') }}
+          restore-keys: |
+            xcode-derived-data-${{ runner.os }}-
+
       - name: Build
         run: |
           xcodebuild build \
@@ -37,7 +52,15 @@ jobs:
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
-            | xcpretty --color || exit ${PIPESTATUS[0]}
+            -verbose 2>&1 | tee build.log | xcpretty --color || exit ${PIPESTATUS[0]}
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
+          retention-days: 3
 
       - name: Report result
         if: always()
@@ -45,6 +68,6 @@ jobs:
           if [ "${{ job.status }}" = "success" ]; then
             echo "✅ Build succeeded"
           else
-            echo "❌ Build failed"
+            echo "❌ Build failed (see build-log artifact)"
             exit 1
           fi

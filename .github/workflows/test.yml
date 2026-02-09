@@ -1,0 +1,64 @@
+name: Diagnostics
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnostics:
+    name: Runner Diagnostics
+    runs-on: self-hosted
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: System Info
+        run: |
+          echo "=== macOS Version ==="
+          sw_vers
+          echo ""
+          echo "=== Disk Space ==="
+          df -h /
+          echo ""
+          echo "=== Memory ==="
+          vm_stat | grep "Pages"
+
+      - name: Xcode Info
+        run: |
+          echo "=== Xcode Version ==="
+          xcodebuild -version
+          echo ""
+          echo "=== Available SDKs ==="
+          xcodebuild -showsdks | head -20
+          echo ""
+          echo "=== Swift Version ==="
+          swift --version
+
+      - name: Repository Check
+        run: |
+          echo "=== Git Info ==="
+          git log --oneline -1
+          echo ""
+          echo "=== Project Structure ==="
+          ls -la | grep -E "xcodeproj|xcworkspace"
+          echo ""
+          echo "=== Scheme List ==="
+          xcodebuild -project lsom.xcodeproj -list
+
+      - name: Dry Run Build (no compile)
+        run: |
+          echo "=== Build Preparation ==="
+          xcodebuild build \
+            -project lsom.xcodeproj \
+            -scheme lsom \
+            -configuration Debug \
+            -destination 'platform=macOS' \
+            -dry-run \
+            -verbose 2>&1 | head -30
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "✅ Runner diagnostics complete"
+          echo "If build warnings appear above, the runner is ready for full builds"
