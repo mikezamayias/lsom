@@ -4,7 +4,6 @@
 
 ![macOS 13.0+](https://img.shields.io/badge/macOS-13.0+-blue)
 ![Swift 5.9](https://img.shields.io/badge/Swift-5.9-orange)
-![License: MIT](https://img.shields.io/badge/License-MIT-green)
 
 ## CI/CD Status
 
@@ -145,7 +144,7 @@ Contributions are welcome! Please:
 
 ## License
 
-MIT License — see [LICENSE](LICENSE) for details.
+Proprietary Software — see [LICENSE_APP.txt](LICENSE_APP.txt) for terms and conditions.
 
 ## Acknowledgments
 

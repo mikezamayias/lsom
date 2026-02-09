@@ -1,0 +1,79 @@
+SOFTWARE LICENSE AGREEMENT
+
+LSOM - Logitech Status on Mac
+Version 1.0 and Later
+
+© 2024–2026 Mike Zamayias. All Rights Reserved.
+
+---
+
+1. LICENSE GRANT
+
+Subject to the terms and conditions of this Agreement, Mike Zamayias ("Licensor") grants 
+you a limited, non-exclusive, non-transferable, revocable license to use this software 
+("Software") solely for your personal, non-commercial use on macOS systems you own or 
+control.
+
+2. RESTRICTIONS
+
+You may not:
+- Copy, modify, adapt, translate, or create derivative works
+- Distribute, sublicense, rent, lease, transfer, or sell
+- Reverse-engineer, decompile, disassemble, or attempt to derive source code
+- Remove or alter any proprietary notices, labels, or marks
+- Use the Software for any commercial purpose without written permission
+
+3. INTELLECTUAL PROPERTY
+
+The Software and all copies are proprietary property of Mike Zamayias. All rights not 
+expressly granted herein are reserved. The Software contains trade secrets and 
+confidential information protected by copyright and applicable law.
+
+4. DISCLAIMER OF WARRANTIES
+
+THE SOFTWARE IS PROVIDED "AS-IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+PARTICULAR PURPOSE, AND NON-INFRINGEMENT. LICENSOR DOES NOT WARRANT THAT THE 
+SOFTWARE WILL BE UNINTERRUPTED, ERROR-FREE, OR SECURE.
+
+5. LIMITATION OF LIABILITY
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, LICENSOR SHALL NOT BE LIABLE FOR ANY 
+INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOSS 
+OF DATA, REVENUE, OR PROFITS, ARISING FROM YOUR USE OR INABILITY TO USE THE SOFTWARE, 
+EVEN IF LICENSOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+6. TERMINATION
+
+This license is effective until terminated. Your rights terminate automatically without 
+notice if you breach any term. Upon termination, you must cease all use and destroy 
+all copies in your possession.
+
+7. THIRD-PARTY ACKNOWLEDGMENTS
+
+This Software references and implements:
+
+- Logitech HID++ 2.0 Protocol
+  Specification: https://lekensteyn.nl/files/logitech/logitech_hidpp_2.0_specification_draft_2012-06-04.pdf
+  Used for informational purposes only.
+
+- Community Research
+  Reverse-engineering insights from the Logitech HID++ community and related documentation.
+
+8. GOVERNING LAW
+
+This Agreement shall be governed by the laws of Greece, without regard to its conflict 
+of law principles.
+
+9. CONTACT
+
+For licensing inquiries, support, or questions:
+Email: [your contact email]
+Website: https://github.com/mikezamayias/lsom
+
+---
+
+BY USING THIS SOFTWARE, YOU AGREE TO BE BOUND BY ALL TERMS AND CONDITIONS OF THIS 
+AGREEMENT.
+
+Last Updated: February 9, 2026
