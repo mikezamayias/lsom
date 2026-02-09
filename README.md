@@ -6,6 +6,12 @@
 ![Swift 5.9](https://img.shields.io/badge/Swift-5.9-orange)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
 
+## CI/CD Status
+
+[![Build & Test](https://github.com/mikezamayias/lsom/actions/workflows/build.yml/badge.svg)](https://github.com/mikezamayias/lsom/actions/workflows/build.yml)
+[![Lint & Test](https://github.com/mikezamayias/lsom/actions/workflows/lint.yml/badge.svg)](https://github.com/mikezamayias/lsom/actions/workflows/lint.yml)
+[![Release](https://github.com/mikezamayias/lsom/actions/workflows/release.yml/badge.svg)](https://github.com/mikezamayias/lsom/actions/workflows/release.yml)
+
 ## Features
 
 - **Menu bar battery display** — See your mouse battery percentage at a glance
