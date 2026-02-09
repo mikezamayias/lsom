@@ -18,7 +18,7 @@ jobs:
   release:
     name: Build & Release
     runs-on: self-hosted
-    timeout-minutes: 120
+    timeout-minutes: 45
 
     env:
       SCHEME: lsom
@@ -103,6 +103,8 @@ jobs:
       # ── Build ───────────────────────────────────────────────────
       - name: Archive (Release)
         run: |
+          echo "⏱️  Starting archive at $(date)"
+          
           # Determine signing flags
           if [ -n "${{ secrets.DEVELOPER_ID_CERTIFICATE_BASE64 }}" ]; then
             SIGN_FLAGS=""
@@ -120,6 +122,8 @@ jobs:
             -archivePath "$ARCHIVE_PATH" \
             $SIGN_FLAGS \
             | xcpretty --color || exit ${PIPESTATUS[0]}
+          
+          echo "✅ Archive complete at $(date)"
 
       - name: Export .app
         run: |
