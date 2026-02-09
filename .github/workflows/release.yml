@@ -18,7 +18,7 @@ jobs:
   release:
     name: Build & Release
     runs-on: self-hosted
-    timeout-minutes: 45
+    timeout-minutes: 50
 
     env:
       SCHEME: lsom
