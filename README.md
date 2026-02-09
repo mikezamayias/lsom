@@ -145,3 +145,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 - [Logitech HID++ 2.0 specification](https://lekensteyn.nl/files/logitech/logitech_hidpp_2.0_specification_draft_2012-06-04.pdf) for protocol documentation
 - The reverse engineering community for HID++ insights
+# Test build trigger
