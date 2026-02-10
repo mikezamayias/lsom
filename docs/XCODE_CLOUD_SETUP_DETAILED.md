@@ -77,35 +77,35 @@ This workflow compiles the project on every push to catch build errors early.
 1. In the Xcode Cloud dashboard (or Xcode), click **"Create Workflow"**
 2. Configure the following settings:
 
-| Setting | Value |
-|---|---|
-| **Workflow Name** | `Build (Debug)` |
-| **Description** | Builds the project on every push to verify compilation |
-| **Repository** | `mikezamayias/budget-coach` |
+| Setting           | Value                                                  |
+| ----------------- | ------------------------------------------------------ |
+| **Workflow Name** | `Build (Debug)`                                        |
+| **Description**   | Builds the project on every push to verify compilation |
+| **Repository**    | `mikezamayias/budget-coach`                            |
 
 ### Start Conditions
 
-| Setting | Value |
-|---|---|
-| **Trigger** | Branch Changes |
-| **Source Branch** | All Branches (or specify `main`, `develop`, etc.) |
+| Setting                | Value                                             |
+| ---------------------- | ------------------------------------------------- |
+| **Trigger**            | Branch Changes                                    |
+| **Source Branch**      | All Branches (or specify `main`, `develop`, etc.) |
 | **Auto-cancel builds** | Enabled (recommended — cancels superseded builds) |
 
 ### Environment
 
-| Setting | Value |
-|---|---|
+| Setting           | Value                                                   |
+| ----------------- | ------------------------------------------------------- |
 | **Xcode Version** | Latest Release (or pin to a specific version like 15.x) |
-| **macOS Version** | Latest Release |
+| **macOS Version** | Latest Release                                          |
 
 ### Actions
 
-| Setting | Value |
-|---|---|
-| **Action Type** | Build |
-| **Scheme** | `lsom` |
-| **Platform** | macOS |
-| **Configuration** | Debug |
+| Setting           | Value  |
+| ----------------- | ------ |
+| **Action Type**   | Build  |
+| **Scheme**        | `lsom` |
+| **Platform**      | macOS  |
+| **Configuration** | Debug  |
 
 ### Post-Actions
 
@@ -124,35 +124,35 @@ This workflow runs your test suite on every push to catch regressions.
 1. Click **"Create Workflow"**
 2. Configure the following settings:
 
-| Setting | Value |
-|---|---|
-| **Workflow Name** | `Test` |
-| **Description** | Runs the test suite on every push |
-| **Repository** | `mikezamayias/budget-coach` |
+| Setting           | Value                             |
+| ----------------- | --------------------------------- |
+| **Workflow Name** | `Test`                            |
+| **Description**   | Runs the test suite on every push |
+| **Repository**    | `mikezamayias/budget-coach`       |
 
 ### Start Conditions
 
-| Setting | Value |
-|---|---|
-| **Trigger** | Branch Changes |
-| **Source Branch** | All Branches |
-| **Auto-cancel builds** | Enabled |
+| Setting                | Value          |
+| ---------------------- | -------------- |
+| **Trigger**            | Branch Changes |
+| **Source Branch**      | All Branches   |
+| **Auto-cancel builds** | Enabled        |
 
 ### Environment
 
-| Setting | Value |
-|---|---|
+| Setting           | Value          |
+| ----------------- | -------------- |
 | **Xcode Version** | Latest Release |
 | **macOS Version** | Latest Release |
 
 ### Actions
 
-| Setting | Value |
-|---|---|
-| **Action Type** | Test |
-| **Scheme** | `lsom` |
-| **Platform** | macOS |
-| **Configuration** | Debug |
+| Setting           | Value  |
+| ----------------- | ------ |
+| **Action Type**   | Test   |
+| **Scheme**        | `lsom` |
+| **Platform**      | macOS  |
+| **Configuration** | Debug  |
 
 ### Post-Actions
 
@@ -173,48 +173,48 @@ This workflow creates a release build when you push a version tag (e.g., `v1.0.0
 1. Click **"Create Workflow"**
 2. Configure the following settings:
 
-| Setting | Value |
-|---|---|
-| **Workflow Name** | `Release` |
-| **Description** | Creates a release archive when a version tag is pushed |
-| **Repository** | `mikezamayias/budget-coach` |
+| Setting           | Value                                                  |
+| ----------------- | ------------------------------------------------------ |
+| **Workflow Name** | `Release`                                              |
+| **Description**   | Creates a release archive when a version tag is pushed |
+| **Repository**    | `mikezamayias/budget-coach`                            |
 
 ### Start Conditions
 
-| Setting | Value |
-|---|---|
-| **Trigger** | Tag Changes |
-| **Tag Pattern** | `v*.*.*` |
+| Setting                | Value                                                |
+| ---------------------- | ---------------------------------------------------- |
+| **Trigger**            | Tag Changes                                          |
+| **Tag Pattern**        | `v*.*.*`                                             |
 | **Auto-cancel builds** | Disabled (you want every tagged release to complete) |
 
 ### Environment
 
-| Setting | Value |
-|---|---|
+| Setting           | Value                                       |
+| ----------------- | ------------------------------------------- |
 | **Xcode Version** | Latest Release (or pin for reproducibility) |
-| **macOS Version** | Latest Release |
+| **macOS Version** | Latest Release                              |
 
 ### Actions
 
-| Setting | Value |
-|---|---|
-| **Action Type** | Archive |
-| **Scheme** | `lsom` |
-| **Platform** | macOS |
+| Setting           | Value   |
+| ----------------- | ------- |
+| **Action Type**   | Archive |
+| **Scheme**        | `lsom`  |
+| **Platform**      | macOS   |
 | **Configuration** | Release |
 
 ### Code Signing
 
-| Setting | Value |
-|---|---|
-| **Signing Style** | Automatic |
-| **Team** | `DW97QZ7F3B` |
+| Setting                 | Value                                                                   |
+| ----------------------- | ----------------------------------------------------------------------- |
+| **Signing Style**       | Automatic                                                               |
+| **Team**                | `DW97QZ7F3B`                                                            |
 | **Distribution Method** | Developer ID (for direct distribution) or App Store (for Mac App Store) |
 
 ### Notarization
 
-| Setting | Value |
-|---|---|
+| Setting      | Value                                                       |
+| ------------ | ----------------------------------------------------------- |
 | **Notarize** | Enabled (recommended if distributing outside the App Store) |
 
 > **Note:** Notarization is handled automatically by Xcode Cloud when using Developer ID distribution. The app will be submitted to Apple's notary service, and Xcode Cloud will staple the notarization ticket to the archive.
@@ -255,7 +255,7 @@ After your workflows are created, you can enhance the Release workflow with GitH
        echo "Release archive completed successfully"
        echo "Tag: $CI_TAG"
        echo "Build Number: $CI_BUILD_NUMBER"
-       
+
        # To create GitHub Releases automatically, you would need:
        # 1. A GitHub Personal Access Token stored as an Xcode Cloud environment variable
        # 2. The GitHub CLI (gh) or curl to call the GitHub API
@@ -270,6 +270,7 @@ After your workflows are created, you can enhance the Release workflow with GitH
    ```
 
 3. **Make the script executable:**
+
    ```bash
    chmod +x ci_scripts/ci_post_xcodebuild.sh
    ```
@@ -288,6 +289,7 @@ After your workflows are created, you can enhance the Release workflow with GitH
 ### Trigger the Build & Test Workflows
 
 1. Make a small commit to any branch:
+
    ```bash
    cd /Users/mzamagias/Developer/Swift/lsom
    git add .
@@ -323,6 +325,7 @@ After your workflows are created, you can enhance the Release workflow with GitH
 ### Trigger the Release Workflow
 
 1. **Create and push a beta tag:**
+
    ```bash
    cd /Users/mzamagias/Developer/Swift/lsom
    git tag v1.0.0-beta
@@ -348,6 +351,7 @@ After your workflows are created, you can enhance the Release workflow with GitH
 ### Clean Up Beta Tag (Optional)
 
 If the beta was just for testing:
+
 ```bash
 git tag -d v1.0.0-beta
 git push origin --delete v1.0.0-beta
@@ -362,6 +366,7 @@ git push origin --delete v1.0.0-beta
 **Symptoms:** Build workflow shows a red ❌
 
 **Solutions:**
+
 - **Check build logs** in Xcode Cloud dashboard for the specific error
 - **Missing dependencies:** Ensure all Swift Package Manager dependencies are properly declared in `Package.resolved` (committed to the repo)
 - **Signing issues:** Verify your team ID (`DW97QZ7F3B`) is correctly configured and your Apple Developer account is active
@@ -373,6 +378,7 @@ git push origin --delete v1.0.0-beta
 **Symptoms:** Release workflow hangs at notarization step
 
 **Solutions:**
+
 - Xcode Cloud will **retry automatically** — wait for the retry
 - Check [Apple System Status](https://developer.apple.com/system-status/) for notary service issues
 - If persistent, try triggering the workflow again
@@ -382,6 +388,7 @@ git push origin --delete v1.0.0-beta
 **Symptoms:** Error saying the scheme `lsom` cannot be found
 
 **Solutions:**
+
 1. Open the project in Xcode
 2. Go to **Product → Scheme → Manage Schemes**
 3. Ensure `lsom` scheme exists and the **Shared** checkbox is checked
@@ -397,6 +404,7 @@ git push origin --delete v1.0.0-beta
 **Symptoms:** Xcode Cloud can't see your repository or can't access it
 
 **Solutions:**
+
 1. Go to GitHub → **Settings → Integrations → Applications**
 2. Find the **Xcode Cloud** app
 3. Click **Configure** and verify it has access to the correct repository
@@ -408,6 +416,7 @@ git push origin --delete v1.0.0-beta
 **Symptoms:** Scripts can't access custom environment variables
 
 **Solutions:**
+
 - Verify the variable is set in the correct workflow's settings
 - Secret variables are not printed in logs — use `echo "VAR is set: $([ -n "$VAR" ] && echo yes || echo no)"` to check
 - Variable names are case-sensitive
@@ -417,6 +426,7 @@ git push origin --delete v1.0.0-beta
 **Symptoms:** Works on your machine but not in CI
 
 **Solutions:**
+
 - Check Xcode version differences between local and CI
 - Ensure all dependencies are committed (`Package.resolved`)
 - Xcode Cloud uses a clean environment — no cached builds or local configurations
@@ -457,17 +467,17 @@ git tag -d v1.0.0 && git push origin --delete v1.0.0
 
 These are automatically available in `ci_scripts/`:
 
-| Variable | Description |
-|---|---|
-| `CI` | Always `TRUE` in Xcode Cloud |
-| `CI_WORKFLOW` | Name of the current workflow |
-| `CI_XCODEBUILD_ACTION` | Current action (`build`, `test`, `archive`) |
-| `CI_BUILD_NUMBER` | Auto-incrementing build number |
-| `CI_TAG` | Git tag that triggered the build (if applicable) |
-| `CI_BRANCH` | Branch name |
-| `CI_COMMIT` | Commit SHA |
-| `CI_PRODUCT` | Product name |
-| `CI_ARCHIVE_PATH` | Path to the archive (archive action only) |
+| Variable               | Description                                      |
+| ---------------------- | ------------------------------------------------ |
+| `CI`                   | Always `TRUE` in Xcode Cloud                     |
+| `CI_WORKFLOW`          | Name of the current workflow                     |
+| `CI_XCODEBUILD_ACTION` | Current action (`build`, `test`, `archive`)      |
+| `CI_BUILD_NUMBER`      | Auto-incrementing build number                   |
+| `CI_TAG`               | Git tag that triggered the build (if applicable) |
+| `CI_BRANCH`            | Branch name                                      |
+| `CI_COMMIT`            | Commit SHA                                       |
+| `CI_PRODUCT`           | Product name                                     |
+| `CI_ARCHIVE_PATH`      | Path to the archive (archive action only)        |
 
 ### Useful Xcode Commands
 
@@ -489,12 +499,12 @@ xcodebuild -scheme lsom -configuration Release archive -archivePath ./build/lsom
 
 ## Workflow Summary
 
-| Workflow | Trigger | Action | Configuration |
-|---|---|---|---|
-| **Build (Debug)** | Push to any branch | Build | Debug |
-| **Test** | Push to any branch | Test | Debug |
-| **Release** | Tag matching `v*.*.*` | Archive + Notarize | Release |
+| Workflow          | Trigger               | Action             | Configuration |
+| ----------------- | --------------------- | ------------------ | ------------- |
+| **Build (Debug)** | Push to any branch    | Build              | Debug         |
+| **Test**          | Push to any branch    | Test               | Debug         |
+| **Release**       | Tag matching `v*.*.*` | Archive + Notarize | Release       |
 
 ---
 
-*Last updated: 2026-02-08*
+_Last updated: 2026-02-08_
