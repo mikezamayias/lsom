@@ -33,6 +33,8 @@ enum UserDefaultsKey {
     static let autoRefreshInterval = "AutoRefreshIntervalSeconds"
     static let showPercentageInMenuBar = "ShowPercentageInMenuBar"
     static let hasDismissedInputMonitoringHint = "HasDismissedInputMonitoringHint"
+    static let lastUsedDPI = "LastUsedDPI"
+    static let lastUsedPollingRate = "LastUsedPollingRate"
 }
 
 @MainActor
@@ -64,7 +66,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         UserDefaults.standard.register(defaults: [
             UserDefaultsKey.showPercentageInMenuBar: true,
             UserDefaultsKey.autoRefreshInterval: 0,
-            UserDefaultsKey.hasDismissedInputMonitoringHint: false
+            UserDefaultsKey.hasDismissedInputMonitoringHint: false,
+            UserDefaultsKey.lastUsedDPI: 800,        // Default DPI for new users
+            UserDefaultsKey.lastUsedPollingRate: 1000  // Default polling rate (1000 Hz)
         ])
 
         // Configure auto‑refresh timer from stored settings.

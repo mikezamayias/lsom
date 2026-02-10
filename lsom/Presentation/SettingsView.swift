@@ -74,6 +74,10 @@ final class SettingsViewModel: ObservableObject {
         guard !isLoadingMouse else { return }
         isLoadingMouse = true
         let mouseService = mouseSettingsService
+        let dpiKey = UserDefaultsKey.lastUsedDPI
+        let pollingRateKey = UserDefaultsKey.lastUsedPollingRate
+        let savedDPI = UserDefaults.standard.integer(forKey: dpiKey)
+        let savedPollingRate = UserDefaults.standard.integer(forKey: pollingRateKey)
 
         Task.detached(priority: .userInitiated) { [weak self] in
             let dpiResult: Result<DPISensorInfo, Error>
@@ -100,6 +104,16 @@ final class SettingsViewModel: ObservableObject {
                     selectedDPI = dpiInfo.currentDPI
                     supportedDPIValues = dpiInfo.supportedValues
                     dpiSupported = true
+                    
+                    // If device DPI differs from saved preference and saved is supported,
+                    // auto-restore the saved DPI
+                    if savedDPI > 0 && savedDPI != dpiInfo.currentDPI && 
+                       dpiInfo.supportedValues.contains(savedDPI) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            self.selectedDPI = savedDPI
+                            self.commitDPI()
+                        }
+                    }
                 case .failure:
                     dpiSupported = false
                 }
@@ -109,6 +123,15 @@ final class SettingsViewModel: ObservableObject {
                     currentPollingRate = pollingInfo.currentHz
                     supportedPollingRates = pollingInfo.supportedHz.sorted()
                     pollingSupported = true
+                    
+                    // If device polling rate differs from saved preference and saved is supported,
+                    // auto-restore the saved polling rate
+                    if savedPollingRate > 0 && savedPollingRate != pollingInfo.currentHz &&
+                       pollingInfo.supportedHz.contains(savedPollingRate) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            self.applyPollingRate(savedPollingRate, previousRate: pollingInfo.currentHz)
+                        }
+                    }
                 case .failure:
                     pollingSupported = false
                 }
@@ -128,6 +151,10 @@ final class SettingsViewModel: ObservableObject {
         Task.detached(priority: .userInitiated) { [weak self] in
             do {
                 try await mouseService.setDPI(targetDPI, forSensor: 0)
+                
+                // Persist the DPI selection to UserDefaults
+                UserDefaults.standard.set(targetDPI, forKey: UserDefaultsKey.lastUsedDPI)
+                
                 await MainActor.run { [weak self] in
                     self?.currentDPI = targetDPI
                 }
@@ -162,6 +189,10 @@ final class SettingsViewModel: ObservableObject {
                 print("lsom/polling-ui: Calling mouseService.setPollingRate(\(rate))")
                 #endif
                 try await mouseService.setPollingRate(rate)
+                
+                // Persist the polling rate selection to UserDefaults
+                UserDefaults.standard.set(rate, forKey: UserDefaultsKey.lastUsedPollingRate)
+                
                 #if DEBUG
                 print("lsom/polling-ui: setPollingRate completed successfully")
                 #endif
