@@ -14,7 +14,7 @@ jobs:
   build:
     name: Build (Debug)
     runs-on: self-hosted
-    timeout-minutes: 50
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -25,25 +25,11 @@ jobs:
           XCODE_PATH=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
           echo "Using Xcode at: $XCODE_PATH"
           xcode-select -s "$XCODE_PATH/Contents/Developer" || echo "Note: xcode-select may not need sudo on this runner"
-          timeout 30 xcodebuild -version || echo "Xcode version check timed out or failed"
-
-      - name: Warm up Xcode (SDK cache)
-        run: |
-          echo "Warming up Xcode SDKs..."
-          xcodebuild -showsdks > /dev/null 2>&1
-          xcodebuild -version > /dev/null 2>&1
-          echo "✅ Xcode ready"
-
-      - name: Restore DerivedData cache
-        uses: actions/cache@v4
-        with:
-          path: ~/Library/Developer/Xcode/DerivedData
-          key: xcode-derived-data-${{ runner.os }}-${{ hashFiles('**/Package.resolved', 'lsom.xcodeproj/**/*.pbxproj') }}
-          restore-keys: |
-            xcode-derived-data-${{ runner.os }}-
+          xcodebuild -version
 
       - name: Build
         run: |
+          set -o pipefail
           xcodebuild build \
             -project lsom.xcodeproj \
             -scheme lsom \
@@ -52,7 +38,7 @@ jobs:
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
-            -verbose 2>&1 | tee build.log | xcpretty --color || exit ${PIPESTATUS[0]}
+            2>&1 | tee build.log | xcpretty --color
 
       - name: Upload build log on failure
         if: failure()
@@ -61,13 +47,3 @@ jobs:
           name: build-log
           path: build.log
           retention-days: 3
-
-      - name: Report result
-        if: always()
-        run: |
-          if [ "${{ job.status }}" = "success" ]; then
-            echo "✅ Build succeeded"
-          else
-            echo "❌ Build failed (see build-log artifact)"
-            exit 1
-          fi

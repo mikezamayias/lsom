@@ -23,6 +23,7 @@ jobs:
       - name: Run SwiftLint
         run: |
           if command -v swiftlint &> /dev/null; then
+            mkdir -p build
             swiftlint lint --strict lsom --reporter json > build/lint-results.json || true
             echo "✅ SwiftLint completed"
           else
