@@ -30,15 +30,27 @@ jobs:
       - name: Build
         run: |
           set -o pipefail
-          xcodebuild build \
-            -project lsom.xcodeproj \
-            -scheme lsom \
-            -configuration Debug \
-            -destination 'platform=macOS' \
-            CODE_SIGN_IDENTITY="-" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            2>&1 | tee build.log | xcpretty --color
+          if command -v xcpretty &>/dev/null; then
+            xcodebuild build \
+              -project lsom.xcodeproj \
+              -scheme lsom \
+              -configuration Debug \
+              -destination 'platform=macOS' \
+              CODE_SIGN_IDENTITY="-" \
+              CODE_SIGNING_REQUIRED=NO \
+              CODE_SIGNING_ALLOWED=NO \
+              2>&1 | tee build.log | xcpretty --color
+          else
+            xcodebuild build \
+              -project lsom.xcodeproj \
+              -scheme lsom \
+              -configuration Debug \
+              -destination 'platform=macOS' \
+              CODE_SIGN_IDENTITY="-" \
+              CODE_SIGNING_REQUIRED=NO \
+              CODE_SIGNING_ALLOWED=NO \
+              2>&1 | tee build.log
+          fi
 
       - name: Upload build log on failure
         if: failure()

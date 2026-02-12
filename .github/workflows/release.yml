@@ -113,7 +113,7 @@ jobs:
             -destination 'platform=macOS' \
             -archivePath "$ARCHIVE_PATH" \
             $SIGN_FLAGS \
-            | xcpretty --color || exit ${PIPESTATUS[0]}
+            | if command -v xcpretty &>/dev/null; then xcpretty --color; else cat; fi
           
           echo "✅ Archive complete at $(date)"
 
